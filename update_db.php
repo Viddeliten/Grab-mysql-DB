@@ -1,11 +1,14 @@
 <?php
-
-
-require_once("../config.php"); 
-require_once("../functions/db_connect.php");
+$dir_path=getcwd ();
+chdir("../");
+require_once("config.php"); 
+require_once("functions/db_connect.php");
 $connection=db_connect(db_host, db_name, db_user, db_pass);
 
-$serialized_db=file_get_contents ( "serialized_db.txt");
+chdir($dir_path);
+require_once("config.php");
+
+$serialized_db=file_get_contents ( SERIALIZED_PATH."/serialized_db.txt");
 if($serialized_db!==FALSE)
 {
 	$create=unserialize($serialized_db);
@@ -17,7 +20,7 @@ if($serialized_db!==FALSE)
 		if(isset($create[$i]['Create Table']) && isset($create[$i]['Table']))
 		{
 			$create[$i]['Create Table']=str_replace("CREATE TABLE IF NOT EXISTS `".$create[$i]['Table']."`","CREATE TABLE IF NOT EXISTS `".PREFIX.$create[$i]['Table']."`",$create[$i]['Create Table']);
-			if($cr=mysql_query($create[$i]['Create Table']))
+			if(!mysql_query($create[$i]['Create Table']))
 			{
 				echo "<pre>".$create[$i]['Create Table']."</pre>";
 				echo "<pre>".mysql_error()."</pre>";
@@ -25,7 +28,8 @@ if($serialized_db!==FALSE)
 		}
 		else if(isset($create[$i]['Create View']))
 		{
-			if($cr=mysql_query($create[$i]['Create View']))
+			$create[$i]['Create View']=str_replace("DEFINER=`root`@","DEFINER=`".db_user."`@",$create[$i]['Create View']);
+			if(!mysql_query($create[$i]['Create View']))
 			{
 				echo "<pre>".$create[$i]['Create View']."</pre>";
 				echo "<pre>".mysql_error()."</pre>";
