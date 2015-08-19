@@ -1,3 +1,9 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+  <head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# object: http://ogp.me/ns/object# article: http://ogp.me/ns/article# profile: http://ogp.me/ns/profile#">
+    <meta charset='utf-8'>
+</head>
+<body>
 <?php
 $dir_path=getcwd ();
 chdir("../");
@@ -143,3 +149,5 @@ if($serialized_db!==FALSE)
 
 db_close($connection);
 ?>
+</body>
+</html>
