@@ -1,12 +1,13 @@
 <?php
 $dir_path=getcwd ();
-chdir("../");
+require_once("config_main.php");
+chdir(MAIN_CONFIG_PATH);
 require_once("config.php"); 
 require_once("functions/db_connect.php");
 $connection=db_connect(db_host, db_name, db_user, db_pass);
 
 chdir($dir_path);
-require_once("config.php");
+require_once("config_serialized.php");
 
 //Get creates for all tables
 $sql="show tables;";
