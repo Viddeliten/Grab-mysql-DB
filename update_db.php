@@ -29,16 +29,17 @@ if($serialized_db!==FALSE)
 			$create[$i]['Create Table']=str_replace("CREATE TABLE IF NOT EXISTS `".$create[$i]['Table']."`","CREATE TABLE IF NOT EXISTS `".PREFIX.$create[$i]['Table']."`",$create[$i]['Create Table']);
 			if(!mysql_query($create[$i]['Create Table']))
 			{
-				echo "<pre>".$create[$i]['Create Table']."</pre>";
+				echo "<br />Create Table:<pre>".$create[$i]['Create Table']."</pre>";
 				echo "<pre>".mysql_error()."</pre>";
 			}
 		}
 		else if(isset($create[$i]['Create View']))
 		{
 			$create[$i]['Create View']=str_replace("DEFINER=`root`@","DEFINER=`".db_user."`@",$create[$i]['Create View']);
+			$create[$i]['Create View']=str_replace("CREATE ALGORITHM","CREATE OR REPLACE ALGORITHM",$create[$i]['Create View']);
 			if(!mysql_query($create[$i]['Create View']))
 			{
-				echo "<pre>".$create[$i]['Create View']."</pre>";
+				echo "<br />Create View:<pre>".$create[$i]['Create View']."</pre>";
 				echo "<pre>".mysql_error()."</pre>";
 			}
 		}
