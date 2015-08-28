@@ -28,12 +28,15 @@ if($serialized_db!==FALSE)
 		if(isset($create[$i]['Create Table']) && isset($create[$i]['Table']))
 		{
 			$create[$i]['Create Table']=str_replace("CREATE TABLE IF NOT EXISTS `".$create[$i]['Table']."`","CREATE TABLE IF NOT EXISTS `".PREFIX.$create[$i]['Table']."`",$create[$i]['Create Table']);
+			$create[$i]['Create Table']=preg_replace("/ AUTO_INCREMENT=\d*/","", $create[$i]['Create Table']);
 			if(!mysql_query($create[$i]['Create Table']))
 			{
 				echo "<br />Create Table:<pre>".$create[$i]['Create Table']."</pre>";
 				echo "<pre>".mysql_error()."</pre>";
 				$suggested_sql[]=$create[$i]['Create Table'].";";
 			}
+			// else
+				// echo "<br /><pre>".$create[$i]['Create Table']."</pre>";
 		}
 		else if(isset($create[$i]['Create View']))
 		{
@@ -48,7 +51,7 @@ if($serialized_db!==FALSE)
 		}
 		else if(isset($create[$i]['SQL Original Statement']))
 		{
-			$sql="DROP TRIGGER ".$create[$i]['Trigger'];
+			$sql="DROP TRIGGER ".PREFIX.$create[$i]['Trigger'];
 			if(!mysql_query($sql))
 			{
 				echo "<br />$sql</pre>";
@@ -57,6 +60,7 @@ if($serialized_db!==FALSE)
 			$create[$i]['SQL Original Statement']=str_replace("DEFINER=`root`@","DEFINER=`".db_user."`@",$create[$i]['SQL Original Statement']);
 			$create[$i]['SQL Original Statement']=str_replace("INSERT INTO ","INSERT INTO ".PREFIX,$create[$i]['SQL Original Statement']);
 			$create[$i]['SQL Original Statement']=str_replace("ON `","ON `".PREFIX,$create[$i]['SQL Original Statement']);
+			$create[$i]['SQL Original Statement']=str_replace("TRIGGER `","TRIGGER `".PREFIX,$create[$i]['SQL Original Statement']);
 			// $create[$i]['SQL Original Statement']=str_replace("INSERT INTO ","INSERT INTO ".PREFIX,$create[$i]['SQL Original Statement']);
 			if(!mysql_query($create[$i]['SQL Original Statement']))
 			{
@@ -79,11 +83,11 @@ if($serialized_db!==FALSE)
 
 	for($i=0; $i<count($create); $i++)
 	{
-		if(isset($create[$i]['Table']))
+		if(isset($create[$i]['Create Table']))
 		{
 			echo "<h2>".PREFIX.$create[$i]['Table']."</h2>";
 			
-			$shell_rows=explode("\n",$create[$i]['Create Table']);
+			$source_rows=explode("\n",$create[$i]['Create Table']);
 			
 			if($cc=mysql_query("show create table ".PREFIX.$create[$i]['Table']))
 			{
@@ -92,75 +96,74 @@ if($serialized_db!==FALSE)
 					$current_rows=explode("\n",$c['Create Table']);
 
 					//Remove first row of both, because it only contains create table, wich can't be different.
-					array_shift ( $shell_rows );
+					array_shift ( $source_rows );
 					array_shift ( $current_rows );
 					
 					//remove auto increment and trailing commas
-					foreach($shell_rows as $key => $s)
+					foreach($source_rows as $key => $s)
 					{
-						$shell_rows[$key] = rtrim($s, ',');
-						$shell_rows[$key]=preg_replace("/AUTO_INCREMENT=\d*/","", $shell_rows[$key]);
+						$source_rows[$key] = rtrim($s, ',');
+						$source_rows[$key]=preg_replace("/ AUTO_INCREMENT=\d*/","", $source_rows[$key]);
 					}
 					foreach($current_rows as $key => $s)
 					{
 						$current_rows[$key] = rtrim($s, ',');
-						$current_rows[$key]=preg_replace("/AUTO_INCREMENT=\d*/","", $current_rows[$key]);
+						$current_rows[$key]=preg_replace("/ AUTO_INCREMENT=\d*/","", $current_rows[$key]);
 					}
-					
-					//sort shell_rows so that keys comes before the other stuff
-					sort($shell_rows, SORT_STRING);
-
-					echo "shell_rows<pre>".print_r($shell_rows,1)."</pre>";
-					echo "current_rows<pre>".print_r($current_rows,1)."</pre>";
-					
-					//For each of $shell rows, check that the row exists in $current row
-					foreach($shell_rows as $k => $s)
-					{
-						if(!in_array($s,$current_rows))
-						{
-							echo "<br />This exists in shell but not in current table: '$s'";
-							
-							if (strpos($s,'KEY') !== false)
-							{
-								$suggested_sql[]="ALTER TABLE ".PREFIX.$create[$i]['Table']." ADD ".$s.";";
-							}
-							else if(preg_match("/`[A-Za-z0-9_]*`/", $s, $matches)) //This should mean we are dealing with a column
-							{
-								//Check if $matches[0] exists in any of the rows in $current_rows
-								$column_name = $matches[0];
-								$alter=0;
-								foreach($current_rows as $cr)
-								{
-									if(preg_match("/$column_name/", $cr))
-										$alter=1;
-								}
-								if($alter)
-								{
-									//column exists in current table, so we should just alter it.
-									$suggested_sql[]="ALTER TABLE ".PREFIX.$create[$i]['Table']." MODIFY ".$s.";";
-								}
-								else
-								{
-									//column DOES NOT exists in current table, so we should add it.
-									$suggested_sql[]="ALTER TABLE ".PREFIX.$create[$i]['Table']." ADD ".$s.";";
-								}
-							}
-							else if ($k==count($shell_rows)-1)
-							{
-								$s=str_replace(")", "", $s);
-								$suggested_sql[]="ALTER TABLE ".PREFIX.$create[$i]['Table']." ".$s.";";
-							}
-							else 
-								echo "<br />NO suggestion";
-						}
-					}
-					
 				}
 			}
 			else
 				echo mysql_error();
+
+			//sort source_rows so that keys comes before the other stuff
+			sort($source_rows, SORT_STRING);
+
+			echo "source_rows<pre>".print_r($source_rows,1)."</pre>";
+			echo "current_rows<pre>".print_r($current_rows,1)."</pre>";
+			
+			//For each of $shell rows, check that the row exists in $current row
+			foreach($source_rows as $k => $s)
+			{
+				if(!in_array($s,$current_rows))
+				{
+					echo "<br />This exists in shell but not in current table: '$s'";
+					
+					if (strpos($s,'KEY') !== false)
+					{
+						$suggested_sql[]="ALTER TABLE ".PREFIX.$create[$i]['Table']." ADD ".$s.";";
+					}
+					else if(preg_match("/`[A-Za-z0-9_]*`/", $s, $matches)) //This should mean we are dealing with a column
+					{
+						//Check if $matches[0] exists in any of the rows in $current_rows
+						$column_name = $matches[0];
+						$alter=0;
+						foreach($current_rows as $cr)
+						{
+							if(preg_match("/$column_name/", $cr))
+								$alter=1;
+						}
+						if($alter)
+						{
+							//column exists in current table, so we should just alter it.
+							$suggested_sql[]="ALTER TABLE ".PREFIX.$create[$i]['Table']." MODIFY ".$s.";";
+						}
+						else
+						{
+							//column DOES NOT exists in current table, so we should add it.
+							$suggested_sql[]="ALTER TABLE ".PREFIX.$create[$i]['Table']." ADD ".$s.";";
+						}
+					}
+					else if ($k==count($source_rows)-1)
+					{
+						$s=str_replace(")", "", $s);
+						$suggested_sql[]="ALTER TABLE ".PREFIX.$create[$i]['Table']." ".$s.";";
+					}
+					else 
+						echo "<br />NO suggestion";
+				}
+			}
 		}
-		else if(!isset($create[$i]['View']))
+		else if(!isset($create[$i]['View']) && !isset($create[$i]['Trigger']))
 			echo "UNKNOWN:<pre>".print_r($create[$i],1)."</pre>";
 			
 	}

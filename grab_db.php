@@ -24,6 +24,7 @@ if($tt=mysql_query($sql))
 				{
 					$c['Create Table']=str_replace("CREATE TABLE", "CREATE TABLE IF NOT EXISTS",$c['Create Table']);
 					$c['Create Table']=str_replace("`".PREFIX, "`", $c['Create Table']);
+					$c['Create Table']=preg_replace("/ AUTO_INCREMENT=\d*/","", $c['Create Table']);
 					$c['Table']="`".$c['Table']."`";
 					$c['Table']=str_replace("`".PREFIX, "`",$c['Table']);
 					$c['Table']=str_replace("`", "",$c['Table']);
@@ -54,6 +55,7 @@ if($tt=mysql_query($sql))
 				{
 					$c['SQL Original Statement']=str_replace("ON `".PREFIX, "ON `" ,$c['SQL Original Statement']);
 					$c['SQL Original Statement']=str_replace("INTO ".PREFIX, "INTO ", $c['SQL Original Statement']);
+					$c['SQL Original Statement']=str_replace("TRIGGER `".PREFIX, "TRIGGER `", $c['SQL Original Statement']);
 					$c['Table']="`".$c['Table']."`";
 					$c['Table']=str_replace("`".PREFIX, "`",$c['Table']);
 					$c['Table']=str_replace("`", "",$c['Table']);
