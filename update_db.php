@@ -15,6 +15,7 @@ $connection=db_connect(db_host, db_name, db_user, db_pass);
 chdir($dir_path);
 require_once("config_serialized.php");
 
+$suggested_sql=array();
 $serialized_db=file_get_contents ( SERIALIZED_PATH."/serialized_db.txt");
 if($serialized_db!==FALSE)
 {
@@ -31,6 +32,7 @@ if($serialized_db!==FALSE)
 			{
 				echo "<br />Create Table:<pre>".$create[$i]['Create Table']."</pre>";
 				echo "<pre>".mysql_error()."</pre>";
+				$suggested_sql[]=$create[$i]['Create Table'].";";
 			}
 		}
 		else if(isset($create[$i]['Create View']))
@@ -41,6 +43,26 @@ if($serialized_db!==FALSE)
 			{
 				echo "<br />Create View:<pre>".$create[$i]['Create View']."</pre>";
 				echo "<pre>".mysql_error()."</pre>";
+				$suggested_sql[]=$create[$i]['Create View'].";";
+			}
+		}
+		else if(isset($create[$i]['SQL Original Statement']))
+		{
+			$sql="DROP TRIGGER ".$create[$i]['Trigger'];
+			if(!mysql_query($sql))
+			{
+				echo "<br />$sql</pre>";
+				echo "<pre>".mysql_error()."</pre>";
+			}
+			$create[$i]['SQL Original Statement']=str_replace("DEFINER=`root`@","DEFINER=`".db_user."`@",$create[$i]['SQL Original Statement']);
+			$create[$i]['SQL Original Statement']=str_replace("INSERT INTO ","INSERT INTO ".PREFIX,$create[$i]['SQL Original Statement']);
+			$create[$i]['SQL Original Statement']=str_replace("ON `","ON `".PREFIX,$create[$i]['SQL Original Statement']);
+			// $create[$i]['SQL Original Statement']=str_replace("INSERT INTO ","INSERT INTO ".PREFIX,$create[$i]['SQL Original Statement']);
+			if(!mysql_query($create[$i]['SQL Original Statement']))
+			{
+				echo "<br />SQL Original Statement:<pre>".$create[$i]['SQL Original Statement']."</pre>";
+				echo "<pre>".mysql_error().print_r($create[$i],1)."</pre>";
+				$suggested_sql[]=$create[$i]['SQL Original Statement'].";";
 			}
 		}
 		else
@@ -54,7 +76,7 @@ if($serialized_db!==FALSE)
 	//Check that all columns are the same types and stuff
 	
 	//Look for differences:
-	$suggested_sql=array();
+
 	for($i=0; $i<count($create); $i++)
 	{
 		if(isset($create[$i]['Table']))
