@@ -40,7 +40,8 @@ if($serialized_db!==FALSE)
 		}
 		else if(isset($create[$i]['Create View']))
 		{
-			$create[$i]['Create View']=str_replace("DEFINER=`root`@","DEFINER=`".db_user."`@",$create[$i]['Create View']);
+			// $create[$i]['Create View']=str_replace("DEFINER=`root`@","DEFINER=`".db_user."`@",$create[$i]['Create View']);
+			$create[$i]['Create View']=preg_replace("/DEFINER=`[A-Za-z0-9_-]*`@/","DEFINER=`".db_user."`@", $create[$i]['Create View']);
 			$create[$i]['Create View']=str_replace("CREATE ALGORITHM","CREATE OR REPLACE ALGORITHM",$create[$i]['Create View']);
 			if(!mysql_query($create[$i]['Create View']))
 			{
@@ -57,6 +58,7 @@ if($serialized_db!==FALSE)
 				echo "<br />$sql</pre>";
 				echo "<pre>".mysql_error()."</pre>";
 			}
+
 			$create[$i]['SQL Original Statement']=preg_replace("/DEFINER=`[A-Za-z0-9_-]*`@/","DEFINER=`".db_user."`@", $create[$i]['SQL Original Statement']);
 			$create[$i]['SQL Original Statement']=str_replace("INSERT INTO ","INSERT INTO ".PREFIX,$create[$i]['SQL Original Statement']);
 			$create[$i]['SQL Original Statement']=str_replace("ON `","ON `".PREFIX,$create[$i]['SQL Original Statement']);
