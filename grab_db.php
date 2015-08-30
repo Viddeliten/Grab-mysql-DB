@@ -56,9 +56,9 @@ if($tt=mysql_query($sql))
 					$c['SQL Original Statement']=str_replace("ON `".PREFIX, "ON `" ,$c['SQL Original Statement']);
 					$c['SQL Original Statement']=str_replace("INTO ".PREFIX, "INTO ", $c['SQL Original Statement']);
 					$c['SQL Original Statement']=str_replace("TRIGGER `".PREFIX, "TRIGGER `", $c['SQL Original Statement']);
-					$c['Table']="`".$c['Table']."`";
-					$c['Table']=str_replace("`".PREFIX, "`",$c['Table']);
-					$c['Table']=str_replace("`", "",$c['Table']);
+					$c['Trigger']="`".$c['Trigger']."`";
+					$c['Trigger']=str_replace("`".PREFIX, "`",$c['Trigger']);
+					$c['Trigger']=str_replace("`", "",$c['Trigger']);
 				}
 				$create[]=$c;
 
