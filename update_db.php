@@ -12,6 +12,11 @@ require_once("config.php");
 require_once("functions/db_connect.php");
 $connection=db_connect(db_host, db_name, db_user, db_pass);
 
+echo "<br />Host: ".db_host;
+echo "<br />Database: ".db_name;
+echo "<br />User: ".db_user;
+echo "<br />";
+
 chdir($dir_path);
 require_once("config_serialized.php");
 
@@ -59,7 +64,7 @@ if($serialized_db!==FALSE)
 				echo "<pre>".mysql_error()."</pre>";
 			}
 
-			$create[$i]['SQL Original Statement']=preg_replace("/DEFINER=`[A-Za-z0-9_-]*`@/","DEFINER=`".db_user."`@", $create[$i]['SQL Original Statement']);
+			$create[$i]['SQL Original Statement']=preg_replace("/DEFINER=`[A-Za-z0-9_-]*`@/","DEFINER=`root`@", $create[$i]['SQL Original Statement']);
 			$create[$i]['SQL Original Statement']=str_replace("INSERT INTO ","INSERT INTO ".PREFIX,$create[$i]['SQL Original Statement']);
 			$create[$i]['SQL Original Statement']=str_replace("ON `","ON `".PREFIX,$create[$i]['SQL Original Statement']);
 			$create[$i]['SQL Original Statement']=str_replace("TRIGGER `","TRIGGER `".PREFIX,$create[$i]['SQL Original Statement']);
@@ -126,13 +131,14 @@ if($serialized_db!==FALSE)
 			//For each of $shell rows, check that the row exists in $current row
 			foreach($source_rows as $k => $s)
 			{
+				$sql="";
 				if(!in_array($s,$current_rows))
 				{
 					echo "<br />This exists in shell but not in current table: '$s'";
 					
 					if (strpos($s,'KEY') !== false)
 					{
-						$suggested_sql[]="ALTER TABLE ".PREFIX.$create[$i]['Table']." ADD ".$s.";";
+						$sql="ALTER TABLE ".PREFIX.$create[$i]['Table']." ADD ".$s.";";
 					}
 					else if(preg_match("/`[A-Za-z0-9_]*`/", $s, $matches)) //This should mean we are dealing with a column
 					{
@@ -147,21 +153,28 @@ if($serialized_db!==FALSE)
 						if($alter)
 						{
 							//column exists in current table, so we should just alter it.
-							$suggested_sql[]="ALTER TABLE ".PREFIX.$create[$i]['Table']." MODIFY ".$s.";";
+							$sql="ALTER TABLE ".PREFIX.$create[$i]['Table']." MODIFY ".$s.";";
 						}
 						else
 						{
 							//column DOES NOT exists in current table, so we should add it.
-							$suggested_sql[]="ALTER TABLE ".PREFIX.$create[$i]['Table']." ADD ".$s.";";
+							$sql="ALTER TABLE ".PREFIX.$create[$i]['Table']." ADD ".$s.";";
 						}
 					}
 					else if ($k==count($source_rows)-1)
 					{
 						$s=str_replace(")", "", $s);
-						$suggested_sql[]="ALTER TABLE ".PREFIX.$create[$i]['Table']." ".$s.";";
+						$sql="ALTER TABLE ".PREFIX.$create[$i]['Table']." ".$s.";";
 					}
 					else 
 						echo "<br />NO suggestion";
+					
+					if(!mysql_query($sql))
+					{
+						echo "<br />Create Table:<pre>".$sql."</pre>";
+						echo "<pre>".mysql_error()."</pre>";
+						$suggested_sql[]=$sql;
+					}
 				}
 			}
 		}
