@@ -1,12 +1,19 @@
 <?php
 $dir_path=getcwd ();
 require_once("config_main.php");
-chdir(MAIN_CONFIG_PATH);
-require_once("config.php"); 
-require_once("functions/db_connect.php");
+define('ROOT_PATH', MAIN_CONFIG_PATH."/"); 
+require_once(MAIN_CONFIG_PATH."/config.php"); 
+// chdir("..");
+require_once(MAIN_CONFIG_PATH."/functions/db_connect.php");
+
+echo "<br />Host: ".db_host;
+echo "<br />Database: ".db_name;
+echo "<br />User: ".db_user;
+echo "<br />";
+
 $connection=db_connect(db_host, db_name, db_user, db_pass);
 
-chdir($dir_path);
+// chdir($dir_path);
 require_once("config_serialized.php");
 
 //Get creates for all tables
