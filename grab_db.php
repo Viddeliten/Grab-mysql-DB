@@ -1,10 +1,12 @@
 <?php
 $dir_path=getcwd ();
 require_once("config_main.php");
-define('ROOT_PATH', MAIN_CONFIG_PATH."/"); 
-require_once(MAIN_CONFIG_PATH."/config.php"); 
+// define('ROOT_PATH', MAIN_CONFIG_PATH."/"); 
+chdir(MAIN_CONFIG_PATH);
+require_once("config.php"); 
+echo "<br />CUSTOM_CONTENT_PATH: ".CUSTOM_CONTENT_PATH;
 // chdir("..");
-require_once(MAIN_CONFIG_PATH."/functions/db_connect.php");
+require_once(ABS_PATH."/functions/db_connect.php");
 
 echo "<br />Host: ".db_host;
 echo "<br />Database: ".db_name;
