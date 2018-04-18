@@ -86,5 +86,6 @@ db_close($connection);
 
 //Write all the create tables to a file
 $to_write=serialize($create);
+echo "<br />Writing to ".SERIALIZED_PATH."/serialized_db.txt";
 file_put_contents (SERIALIZED_PATH."/serialized_db.txt" , $to_write ); //write it outside of this folder so that it can be commited to right project
 ?>
