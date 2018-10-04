@@ -86,7 +86,8 @@ echo "CREATE:<pre>".print_r($create,1)."</pre>";
 
 db_close($connection);
 
+echo "Current dir: ".getcwd();
 //Write all the create tables to a file
 $to_write=serialize($create);
-file_put_contents ("serialized_db.txt" , $to_write ); //write it outside of this folder so that it can be commited to right project
+file_put_contents (SERIALIZED_PATH."/serialized_db.txt" , $to_write ); //write it outside of this folder so that it can be commited to right project
 ?>
