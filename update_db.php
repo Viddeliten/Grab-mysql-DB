@@ -10,11 +10,11 @@ require_once("config_main.php");
 chdir(MAIN_CONFIG_PATH);
 require_once("config.php"); 
 require_once("functions/db_connect.php");
-$connection=db_connect(db_host, db_name, db_user, db_pass);
+$connection=db_connect(db_host, db_name, granted_db_user, granted_db_pass);
 
 echo "<br />Host: ".db_host;
 echo "<br />Database: ".db_name;
-echo "<br />User: ".db_user;
+echo "<br />User: ".granted_db_user;
 echo "<br />";
 
 chdir($dir_path);
