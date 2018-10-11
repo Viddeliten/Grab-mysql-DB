@@ -50,6 +50,7 @@ if($serialized_db!==FALSE)
 		{
 			$create[$i]['Create View']=preg_replace("/DEFINER=`[A-Za-z0-9_-]*`@/","DEFINER=`root`@", $create[$i]['Create View']);
 			$create[$i]['Create View']=str_replace("\nCREATE ALGORITHM","CREATE OR REPLACE ALGORITHM",$create[$i]['Create View']);
+			$create[$i]['Create View']=str_replace("CREATE ALGORITHM","CREATE OR REPLACE ALGORITHM",$create[$i]['Create View']);
 			if(!mysql_query($create[$i]['Create View']))
 			{
 				echo "<br />Create View:<pre>".$create[$i]['Create View']."</pre>";

@@ -29,10 +29,12 @@ if($tt=mysql_query($sql))
 		{
 			if($c=mysql_fetch_assoc($cc))
 			{
+                if(isset($c['Create View']))
+                    $c['Create View']=str_replace("CREATE ALGORITHM", "\nCREATE ALGORITHM",$c['Create View']);
+
 				if(isset($c['Table']))
 				{
 					$c['Create Table']=str_replace("CREATE TABLE", "\nCREATE TABLE IF NOT EXISTS",$c['Create Table']);
-					$c['Create Table']=str_replace("CREATE ALGORITHM", "\nCREATE ALGORITHM",$c['Create Table']);
 					$c['Create Table']=str_replace("`".PREFIX, "`", $c['Create Table']);
 					$c['Create Table']=preg_replace("/ AUTO_INCREMENT=\d*/","", $c['Create Table']);
 					$c['Table']="`".$c['Table']."`";
