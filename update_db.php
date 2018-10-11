@@ -10,6 +10,7 @@ require_once("config_main.php");
 chdir(MAIN_CONFIG_PATH);
 require_once("config.php"); 
 require_once("functions/db_connect.php");
+require_once("functions/string.php");
 $connection=db_connect(db_host, db_name, granted_db_user, granted_db_pass);
 
 echo "<br />Host: ".db_host;
@@ -25,6 +26,8 @@ $serialized_db=file_get_contents ( SERIALIZED_PATH."/serialized_db.txt");
 if($serialized_db!==FALSE)
 {
 	$create=unserialize($serialized_db);
+    
+    preprint($create);
 
 	//First, just create the db's
 	for($i=0; $i<count($create); $i++)
@@ -32,7 +35,7 @@ if($serialized_db!==FALSE)
 		//create the table if it doesn't exist
 		if(isset($create[$i]['Create Table']) && isset($create[$i]['Table']))
 		{
-			$create[$i]['Create Table']=str_replace("CREATE TABLE IF NOT EXISTS `".$create[$i]['Table']."`","CREATE TABLE IF NOT EXISTS `".PREFIX.$create[$i]['Table']."`",$create[$i]['Create Table']);
+			$create[$i]['Create Table']=str_replace("\nCREATE TABLE IF NOT EXISTS `".$create[$i]['Table']."`","CREATE TABLE IF NOT EXISTS `".PREFIX.$create[$i]['Table']."`",$create[$i]['Create Table']);
 			$create[$i]['Create Table']=preg_replace("/ AUTO_INCREMENT=\d*/","", $create[$i]['Create Table']);
 			if(!mysql_query($create[$i]['Create Table']))
 			{
@@ -45,9 +48,8 @@ if($serialized_db!==FALSE)
 		}
 		else if(isset($create[$i]['Create View']))
 		{
-			// $create[$i]['Create View']=str_replace("DEFINER=`root`@","DEFINER=`".db_user."`@",$create[$i]['Create View']);
-			$create[$i]['Create View']=preg_replace("/DEFINER=`[A-Za-z0-9_-]*`@/","DEFINER=`".db_user."`@", $create[$i]['Create View']);
-			$create[$i]['Create View']=str_replace("CREATE ALGORITHM","CREATE OR REPLACE ALGORITHM",$create[$i]['Create View']);
+			$create[$i]['Create View']=preg_replace("/DEFINER=`[A-Za-z0-9_-]*`@/","DEFINER=`root`@", $create[$i]['Create View']);
+			$create[$i]['Create View']=str_replace("\nCREATE ALGORITHM","CREATE OR REPLACE ALGORITHM",$create[$i]['Create View']);
 			if(!mysql_query($create[$i]['Create View']))
 			{
 				echo "<br />Create View:<pre>".$create[$i]['Create View']."</pre>";

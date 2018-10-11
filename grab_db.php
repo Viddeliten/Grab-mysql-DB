@@ -31,7 +31,8 @@ if($tt=mysql_query($sql))
 			{
 				if(isset($c['Table']))
 				{
-					$c['Create Table']=str_replace("CREATE TABLE", "CREATE TABLE IF NOT EXISTS",$c['Create Table']);
+					$c['Create Table']=str_replace("CREATE TABLE", "\nCREATE TABLE IF NOT EXISTS",$c['Create Table']);
+					$c['Create Table']=str_replace("CREATE ALGORITHM", "\nCREATE ALGORITHM",$c['Create Table']);
 					$c['Create Table']=str_replace("`".PREFIX, "`", $c['Create Table']);
 					$c['Create Table']=preg_replace("/ AUTO_INCREMENT=\d*/","", $c['Create Table']);
 					$c['Table']="`".$c['Table']."`";
@@ -43,7 +44,6 @@ if($tt=mysql_query($sql))
 				echo "c:<pre>".print_r($c,1)."</pre>";
 			}
 		}
-		//Otherwise, you can run your dump file through a script that would replace all occurrences of CREATE TABLE with CREATE TABLE IF NOT EXISTS.
 	}
 }
 
@@ -62,6 +62,7 @@ if($tt=mysql_query($sql))
 			{
 				if(isset($c['Trigger']))
 				{
+					$c['SQL Original Statement']=str_replace("CREATE DEFINER", "\nCREATE DEFINER", $c['SQL Original Statement']);
 					$c['SQL Original Statement']=str_replace("ON `".PREFIX, "ON `" ,$c['SQL Original Statement']);
 					$c['SQL Original Statement']=str_replace("INTO ".PREFIX, "INTO ", $c['SQL Original Statement']);
 					$c['SQL Original Statement']=str_replace("TRIGGER `".PREFIX, "TRIGGER `", $c['SQL Original Statement']);
@@ -76,7 +77,6 @@ if($tt=mysql_query($sql))
 		}
 		else
 			echo mysql_error();
-		//Otherwise, you can run your dump file through a script that would replace all occurrences of CREATE TABLE with CREATE TABLE IF NOT EXISTS.
 	}
 }
 else
