@@ -23,6 +23,10 @@ require_once("config_serialized.php");
 
 $suggested_sql=array();
 $serialized_db=file_get_contents ( SERIALIZED_PATH."/serialized_db.txt");
+
+$tables=array();
+$view_creates=array();
+
 if($serialized_db!==FALSE)
 {
 	$create=unserialize($serialized_db);
@@ -35,6 +39,8 @@ if($serialized_db!==FALSE)
 		//create the table if it doesn't exist
 		if(isset($create[$i]['Create Table']) && isset($create[$i]['Table']))
 		{
+            $tables[]=$create[$i]['Table'];
+            
 			$create[$i]['Create Table']=str_replace("\nCREATE TABLE IF NOT EXISTS `".$create[$i]['Table']."`","CREATE TABLE IF NOT EXISTS `".PREFIX.$create[$i]['Table']."`",$create[$i]['Create Table']);
 			$create[$i]['Create Table']=preg_replace("/ AUTO_INCREMENT=\d*/","", $create[$i]['Create Table']);
 			if(!mysql_query($create[$i]['Create Table']))
@@ -49,14 +55,11 @@ if($serialized_db!==FALSE)
 		else if(isset($create[$i]['Create View']))
 		{
 			$create[$i]['Create View']=preg_replace("/DEFINER=`[A-Za-z0-9_-]*`@/","DEFINER=`root`@", $create[$i]['Create View']);
+            $create[$i]['Create View']=preg_replace("/".db_name."./","/".db_name.".".PREFIX."/", $create[$i]['Create View']);
 			$create[$i]['Create View']=str_replace("\nCREATE ALGORITHM","CREATE OR REPLACE ALGORITHM",$create[$i]['Create View']);
 			$create[$i]['Create View']=str_replace("CREATE ALGORITHM","CREATE OR REPLACE ALGORITHM",$create[$i]['Create View']);
-			if(!mysql_query($create[$i]['Create View']))
-			{
-				echo "<br />Create View:<pre>".$create[$i]['Create View']."</pre>";
-				echo "<pre>".mysql_error()."</pre>";
-				$suggested_sql[]=$create[$i]['Create View'].";";
-			}
+
+            $view_creates[]=$create[$i]['Create View'];
 		}
 		else if(isset($create[$i]['SQL Original Statement']))
 		{
@@ -82,6 +85,26 @@ if($serialized_db!==FALSE)
 		else
 			echo "Not created:<pre>".print_r($create[$i],1)."</pre>";
 	}
+    
+    //Create views
+    if(!empty($view_creates))
+    {
+        foreach($view_creates as $view)
+        {
+            $create=$view;
+            foreach($tables as $table)
+            {
+                // echo "<br />preg_replace(\"/([^.])`".$table."`\./","\\0`".PREFIX.$table."`.\", $create);";
+                $create=preg_replace("/([^\.])`".$table."`/","\\1`".PREFIX.$table."`", $create);
+            }
+            echo "<br />Create View:<pre>".$create."</pre>";
+            if(!mysql_query($create))
+            {
+                echo "<pre>".mysql_error()."</pre>";
+                $suggested_sql[]=$create.";";
+            }
+        }
+    }
 	
 	echo "<p>Creation process complete</p>";
 	
