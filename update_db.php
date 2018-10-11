@@ -31,8 +31,6 @@ if($serialized_db!==FALSE)
 {
 	$create=unserialize($serialized_db);
     
-    preprint($create);
-
 	//First, just create the db's
 	for($i=0; $i<count($create); $i++)
 	{
@@ -91,17 +89,17 @@ if($serialized_db!==FALSE)
     {
         foreach($view_creates as $view)
         {
-            $create=$view;
+            $create_view=$view;
             foreach($tables as $table)
             {
                 // echo "<br />preg_replace(\"/([^.])`".$table."`\./","\\0`".PREFIX.$table."`.\", $create);";
-                $create=preg_replace("/([^\.])`".$table."`/","\\1`".PREFIX.$table."`", $create);
+                $create_view=preg_replace("/([^\.])`".$table."`/","\\1`".PREFIX.$table."`", $create_view);
             }
-            echo "<br />Create View:<pre>".$create."</pre>";
-            if(!mysql_query($create))
+            echo "<br />Create View:<pre>".$create_view."</pre>";
+            if(!mysql_query($create_view))
             {
                 echo "<pre>".mysql_error()."</pre>";
-                $suggested_sql[]=$create.";";
+                $suggested_sql[]=$create_view.";";
             }
         }
     }
@@ -113,7 +111,7 @@ if($serialized_db!==FALSE)
 	//Check that all columns are the same types and stuff
 	
 	//Look for differences:
-
+    
 	for($i=0; $i<count($create); $i++)
 	{
 		if(isset($create[$i]['Create Table']))
