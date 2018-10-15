@@ -9,9 +9,11 @@ $dir_path=getcwd ();
 require_once("config_main.php");
 chdir(MAIN_CONFIG_PATH);
 require_once("config.php"); 
+require_once("functions/class_db.php");
 require_once("functions/db_connect.php");
 require_once("functions/string.php");
-$connection=db_connect(db_host, db_name, granted_db_user, granted_db_pass);
+// $connection=db_connect(db_host, db_name, granted_db_user, granted_db_pass);
+$db=new db_class(db_host, db_name, granted_db_user, granted_db_pass);
 
 echo "<br />Host: ".db_host;
 echo "<br />Database: ".db_name;
@@ -41,10 +43,10 @@ if($serialized_db!==FALSE)
             
 			$create[$i]['Create Table']=str_replace("\nCREATE TABLE IF NOT EXISTS `".$create[$i]['Table']."`","CREATE TABLE IF NOT EXISTS `".PREFIX.$create[$i]['Table']."`",$create[$i]['Create Table']);
 			$create[$i]['Create Table']=preg_replace("/ AUTO_INCREMENT=\d*/","", $create[$i]['Create Table']);
-			if(!mysql_query($create[$i]['Create Table']))
+			if(!$db->query($create[$i]['Create Table']))
 			{
 				echo "<br />Create Table:<pre>".$create[$i]['Create Table']."</pre>";
-				echo "<pre>".mysql_error()."</pre>";
+				echo "<pre>".$db->error."</pre>";
 				$suggested_sql[]=$create[$i]['Create Table'].";";
 			}
 			// else
@@ -62,10 +64,10 @@ if($serialized_db!==FALSE)
 		else if(isset($create[$i]['SQL Original Statement']))
 		{
 			$sql="DROP TRIGGER IF EXISTS ".PREFIX.$create[$i]['Trigger'];
-			if(!mysql_query($sql))
+			if(!$db->query($sql))
 			{
 				echo "<br />$sql</pre>";
-				echo "<pre>".mysql_error()."</pre>";
+				echo "<pre>".$db->error."</pre>";
 			}
 
 			$create[$i]['SQL Original Statement']=preg_replace("/DEFINER=`[A-Za-z0-9_-]*`@/","DEFINER=`root`@", $create[$i]['SQL Original Statement']);
@@ -73,10 +75,10 @@ if($serialized_db!==FALSE)
 			$create[$i]['SQL Original Statement']=str_replace("ON `","ON `".PREFIX,$create[$i]['SQL Original Statement']);
 			$create[$i]['SQL Original Statement']=str_replace("TRIGGER `","TRIGGER `".PREFIX,$create[$i]['SQL Original Statement']);
 			// $create[$i]['SQL Original Statement']=str_replace("INSERT INTO ","INSERT INTO ".PREFIX,$create[$i]['SQL Original Statement']);
-			if(!mysql_query($create[$i]['SQL Original Statement']))
+			if(!$db->query($create[$i]['SQL Original Statement']))
 			{
 				echo "<br />SQL Original Statement:<pre>".$create[$i]['SQL Original Statement']."</pre>";
-				echo "<pre>".mysql_error().print_r($create[$i],1)."</pre>";
+				echo "<pre>".$db->error.print_r($create[$i],1)."</pre>";
 				$suggested_sql[]=$create[$i]['SQL Original Statement'].";";
 			}
 		}
@@ -96,9 +98,9 @@ if($serialized_db!==FALSE)
                 $create_view=preg_replace("/([^\.])`".$table."`/","\\1`".PREFIX.$table."`", $create_view);
             }
             echo "<br />Create View:<pre>".$create_view."</pre>";
-            if(!mysql_query($create_view))
+            if(!$db->query($create_view))
             {
-                echo "<pre>".mysql_error()."</pre>";
+                echo "<pre>".$db->error."</pre>";
                 $suggested_sql[]=$create_view.";";
             }
         }
@@ -120,31 +122,28 @@ if($serialized_db!==FALSE)
 			
 			$source_rows=explode("\n",$create[$i]['Create Table']);
 			
-			if($cc=mysql_query("show create table ".PREFIX.$create[$i]['Table']))
+			if($c=$db->select_first("show create table ".PREFIX.$create[$i]['Table']))
 			{
-				if($c=mysql_fetch_assoc($cc))
-				{
-					$current_rows=explode("\n",$c['Create Table']);
+                $current_rows=explode("\n",$c['Create Table']);
 
-					//Remove first row of both, because it only contains create table, wich can't be different.
-					array_shift ( $source_rows );
-					array_shift ( $current_rows );
-					
-					//remove auto increment and trailing commas
-					foreach($source_rows as $key => $s)
-					{
-						$source_rows[$key] = rtrim($s, ',');
-						$source_rows[$key]=preg_replace("/ AUTO_INCREMENT=\d*/","", $source_rows[$key]);
-					}
-					foreach($current_rows as $key => $s)
-					{
-						$current_rows[$key] = rtrim($s, ',');
-						$current_rows[$key]=preg_replace("/ AUTO_INCREMENT=\d*/","", $current_rows[$key]);
-					}
-				}
+                //Remove first row of both, because it only contains create table, wich can't be different.
+                array_shift ( $source_rows );
+                array_shift ( $current_rows );
+                
+                //remove auto increment and trailing commas
+                foreach($source_rows as $key => $s)
+                {
+                    $source_rows[$key] = rtrim($s, ',');
+                    $source_rows[$key]=preg_replace("/ AUTO_INCREMENT=\d*/","", $source_rows[$key]);
+                }
+                foreach($current_rows as $key => $s)
+                {
+                    $current_rows[$key] = rtrim($s, ',');
+                    $current_rows[$key]=preg_replace("/ AUTO_INCREMENT=\d*/","", $current_rows[$key]);
+                }
 			}
 			else
-				echo mysql_error();
+				echo $db->error;
 
 			//sort source_rows so that keys comes before the other stuff
 			sort($source_rows, SORT_STRING);
@@ -193,10 +192,10 @@ if($serialized_db!==FALSE)
 					else 
 						echo "<br />NO suggestion";
 					
-					if(!mysql_query($sql))
+                    if(!$db->query($sql))
 					{
 						echo "<br />Create Table:<pre>".$sql."</pre>";
-						echo "<pre>".mysql_error()."</pre>";
+						echo "<pre>".$db->error."</pre>";
 						$suggested_sql[]=$sql;
 					}
 				}
@@ -212,8 +211,6 @@ if($serialized_db!==FALSE)
 		echo "<br />$s";
 	// echo "<pre>".print_r($suggested_sql,1)."</pre>";
 }
-
-db_close($connection);
 ?>
 </body>
 </html>

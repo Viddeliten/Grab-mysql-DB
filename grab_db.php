@@ -13,7 +13,7 @@ echo "<br />Database: ".db_name;
 echo "<br />User: ".db_user;
 echo "<br />";
 
-$connection=db_connect(db_host, db_name, granted_db_user, granted_db_pass);
+require_once("functions/class_db.php");
 
 // chdir($dir_path);
 require_once("config_serialized.php");
@@ -85,8 +85,6 @@ else
 	echo mysql_error();
 
 echo "CREATE:<pre>".print_r($create,1)."</pre>";
-
-db_close($connection);
 
 echo "Current dir: ".getcwd();
 //Write all the create tables to a file
