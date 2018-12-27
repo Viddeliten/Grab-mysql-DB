@@ -2,18 +2,23 @@
 $dir_path=getcwd ();
 require_once("config_main.php");
 // define('ROOT_PATH', MAIN_CONFIG_PATH."/"); 
+echo "<br />Changing path to ".MAIN_CONFIG_PATH;
 chdir(MAIN_CONFIG_PATH);
 require_once("config.php"); 
 echo "<br />CUSTOM_CONTENT_PATH: ".CUSTOM_CONTENT_PATH;
 // chdir("..");
+echo "<br />ABS_PATH: ".ABS_PATH;
 require_once(ABS_PATH."/functions/db_connect.php");
 
 echo "<br />Host: ".db_host;
 echo "<br />Database: ".db_name;
-echo "<br />User: ".db_user;
+echo "<br />User: ".granted_db_user;
 echo "<br />";
 
 require_once("functions/class_db.php");
+
+// $db=static_db::getInstance(db_host, db_name, granted_db_user, granted_db_pass);
+$connection=db_connect(db_host, db_name, granted_db_user, granted_db_pass);
 
 // chdir($dir_path);
 require_once("config_serialized.php");
