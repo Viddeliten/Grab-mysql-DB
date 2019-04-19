@@ -35,8 +35,11 @@ if($tt=mysql_query($sql))
 			if($c=mysql_fetch_assoc($cc))
 			{
                 if(isset($c['Create View']))
+				{
                     $c['Create View']=str_replace("CREATE ALGORITHM", "\nCREATE ALGORITHM",$c['Create View']);
-
+                    $c['Create View']=str_replace("`,`", "`,\n`",$c['Create View']); //Try and make lines shorter to avoid troubles with writing file
+				}
+				
 				if(isset($c['Table']))
 				{
 					$c['Create Table']=str_replace("CREATE TABLE", "\nCREATE TABLE IF NOT EXISTS",$c['Create Table']);
@@ -91,8 +94,10 @@ else
 
 echo "CREATE:<pre>".print_r($create,1)."</pre>";
 
+chdir($dir_path);
 echo "Current dir: ".getcwd();
 //Write all the create tables to a file
 $to_write=serialize($create);
-file_put_contents ($dir_path."/".SERIALIZED_PATH."/serialized_db.txt" , $to_write ); //write it outside of this folder so that it can be commited to right project
+file_put_contents (SERIALIZED_PATH."/serialized_db.txt" , $to_write ); //write it outside of this folder so that it can be commited to right project
+echo "<br />Wrote to: ".SERIALIZED_PATH."/serialized_db.txt";
 ?>
