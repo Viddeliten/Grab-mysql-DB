@@ -95,7 +95,7 @@ if($serialized_db!==FALSE)
             foreach($tables as $table)
             {
                 // echo "<br />preg_replace(\"/([^.])`".$table."`\./","\\0`".PREFIX.$table."`.\", $create);";
-                $create_view=preg_replace("/([^\.])`".$table."`/","\\1`".PREFIX.$table."`", $create_view);
+                $create_view=preg_replace("/([^\.\"AS \"])`".$table."`/","\\1`".PREFIX.$table."`", $create_view);
             }
             echo "<br />Create View:<pre>".$create_view."</pre>";
             if(!$db->query($create_view))
