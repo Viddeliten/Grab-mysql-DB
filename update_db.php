@@ -161,7 +161,10 @@ if($serialized_db!==FALSE)
 					
 					if (strpos($s,'KEY') !== false)
 					{
-						$sql="ALTER TABLE ".PREFIX.$create[$i]['Table']." ADD ".$s.";";
+                        //It might actually be a constraint, thoug, and it might reference a table that needs a prefix.
+                        $s=preg_replace("/REFERENCES `([a-z0-9_]*)`/","REFERENCES `".PREFIX."\\1`", $s);
+						
+                        $sql="ALTER TABLE ".PREFIX.$create[$i]['Table']." ADD ".$s.";";
 					}
 					else if(preg_match("/`[A-Za-z0-9_]*`/", $s, $matches)) //This should mean we are dealing with a column
 					{
