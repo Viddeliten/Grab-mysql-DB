@@ -58,6 +58,24 @@ if($serialized_db!==FALSE)
             $create[$i]['Create View']=preg_replace("/".db_name."./","/".db_name.".".PREFIX."/", $create[$i]['Create View']);
 			$create[$i]['Create View']=str_replace("\nCREATE ALGORITHM","CREATE OR REPLACE ALGORITHM",$create[$i]['Create View']);
 			$create[$i]['Create View']=str_replace("CREATE ALGORITHM","CREATE OR REPLACE ALGORITHM",$create[$i]['Create View']);
+			$create[$i]['Create View']=preg_replace("/join `([^`]+)` /","join `".PREFIX."\\1` ",$create[$i]['Create View']);
+			$create[$i]['Create View']=preg_replace("/select `([^`]+)`.`([^`]+)` /","select `".PREFIX."\\1`.`\\2` ",$create[$i]['Create View']);
+			$create[$i]['Create View']=preg_replace("/from `((?!".PREFIX.")[^`]+)`([^\.])/","from `".PREFIX."\\1`\\2",$create[$i]['Create View']);
+			$create[$i]['Create View']=preg_replace("/\=[\s]*\`([^`]+)\`\.\`([^`]+)\` /","= `".PREFIX."\\1`.`\\2` ",$create[$i]['Create View']);
+			$create[$i]['Create View']=preg_replace("/VIEW \`([^`]+)\` AS/","VIEW `".PREFIX."\\1` AS",$create[$i]['Create View']);
+			
+			preg_match_all("/\`((?!".PREFIX.")[^`]+)\`\.\`([^`]+)\`/",$create[$i]['Create View'],$matches);
+			preprint($matches, "DEBUG1333 matches");
+			foreach($matches[1] as $word)
+			{
+				// If the word is a table or view, we must add the prefix
+				$db->query("SELECT 1 FROM `".PREFIX.$word."` LIMIT 1;");
+				if($db->error==NULL)
+				{
+					$pattern="/\`".$word."\`\.\`([^`]+)\`/";
+					$create[$i]['Create View']=preg_replace($pattern,"`".PREFIX.$word."`.`\\1` ",$create[$i]['Create View']);
+				}
+			}
 
             $view_creates[]=$create[$i]['Create View'];
 		}
