@@ -45,7 +45,7 @@ if($serialized_db!==FALSE)
 			$create[$i]['Create Table']=preg_replace("/ AUTO_INCREMENT=\d*/","", $create[$i]['Create Table']);
 			if(!$db->query($create[$i]['Create Table']))
 			{
-				echo "<br />Create Table:<pre>".$create[$i]['Create Table']."</pre>";
+				echo "<br />48 - Create Table:<pre>".$create[$i]['Create Table']."</pre>";
 				echo "<pre>".$db->error."</pre>";
 				$suggested_sql[]=$create[$i]['Create Table'].";";
 			}
@@ -58,11 +58,11 @@ if($serialized_db!==FALSE)
             $create[$i]['Create View']=preg_replace("/".db_name."./","/".db_name.".".PREFIX."/", $create[$i]['Create View']);
 			$create[$i]['Create View']=str_replace("\nCREATE ALGORITHM","CREATE OR REPLACE ALGORITHM",$create[$i]['Create View']);
 			$create[$i]['Create View']=str_replace("CREATE ALGORITHM","CREATE OR REPLACE ALGORITHM",$create[$i]['Create View']);
-			$create[$i]['Create View']=preg_replace("/join `([^`]+)` /","join `".PREFIX."\\1` ",$create[$i]['Create View']);
-			$create[$i]['Create View']=preg_replace("/select `([^`]+)`.`([^`]+)` /","select `".PREFIX."\\1`.`\\2` ",$create[$i]['Create View']);
+			// $create[$i]['Create View']=preg_replace("/join `([^`]+)` /","join `".PREFIX."\\1` ",$create[$i]['Create View']);
+			// $create[$i]['Create View']=preg_replace("/select `([^`]+)`.`([^`]+)` /","select `".PREFIX."\\1`.`\\2` ",$create[$i]['Create View']);
 			$create[$i]['Create View']=preg_replace("/from `((?!".PREFIX.")[^`]+)`([^\.])/","from `".PREFIX."\\1`\\2",$create[$i]['Create View']);
 			$create[$i]['Create View']=preg_replace("/\=[\s]*\`([^`]+)\`\.\`([^`]+)\` /","= `".PREFIX."\\1`.`\\2` ",$create[$i]['Create View']);
-			$create[$i]['Create View']=preg_replace("/VIEW \`([^`]+)\` AS/","VIEW `".PREFIX."\\1` AS",$create[$i]['Create View']);
+			// $create[$i]['Create View']=preg_replace("/VIEW \`([^`]+)\` AS/","VIEW `".PREFIX."\\1` AS",$create[$i]['Create View']);
 			
 			preg_match_all("/\`((?!".PREFIX.")[^`]+)\`\.\`([^`]+)\`/",$create[$i]['Create View'],$matches);
 			preprint($matches, "DEBUG1333 matches");
@@ -172,6 +172,9 @@ if($serialized_db!==FALSE)
 			//For each of $shell rows, check that the row exists in $current row
 			foreach($source_rows as $k => $s)
 			{
+				//It might be a constraint, and it might reference a table that needs a prefix.
+				$s=preg_replace("/REFERENCES `([a-z0-9_]*)`/","REFERENCES `".PREFIX."\\1`", $s);
+
 				$sql="";
 				if(!in_array($s,$current_rows))
 				{
@@ -179,9 +182,6 @@ if($serialized_db!==FALSE)
 					
 					if (strpos($s,'KEY') !== false)
 					{
-                        //It might actually be a constraint, thoug, and it might reference a table that needs a prefix.
-                        $s=preg_replace("/REFERENCES `([a-z0-9_]*)`/","REFERENCES `".PREFIX."\\1`", $s);
-						
                         $sql="ALTER TABLE ".PREFIX.$create[$i]['Table']." ADD ".$s.";";
 					}
 					else if(preg_match("/`[A-Za-z0-9_]*`/", $s, $matches)) //This should mean we are dealing with a column
