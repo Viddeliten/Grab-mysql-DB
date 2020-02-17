@@ -66,14 +66,28 @@ if($serialized_db!==FALSE)
 			
 			preg_match_all("/\`((?!".PREFIX.")[^`]+)\`\.\`([^`]+)\`/",$create[$i]['Create View'],$matches);
 			preprint($matches, "DEBUG1333 matches");
-			foreach($matches[1] as $word)
+			foreach($matches[1] as $key => $word)
 			{
 				// If the word is a table or view, we must add the prefix
 				$db->query("SELECT 1 FROM `".PREFIX.$word."` LIMIT 1;");
 				if($db->error==NULL)
 				{
+					preprint(PREFIX.$word,"table- ".$key.";");
 					$pattern="/\`".$word."\`\.\`([^`]+)\`/";
 					$create[$i]['Create View']=preg_replace($pattern,"`".PREFIX.$word."`.`\\1` ",$create[$i]['Create View']);
+				}
+			}
+// join `table`
+			preg_match_all("/join \`((?!".PREFIX.")[^`]+)\`/",$create[$i]['Create View'],$matches);
+			preprint($matches, "DEBUG1334 matches");
+			foreach($matches[1] as $key => $word)
+			{
+				// If the word is a table or view, we must add the prefix
+				$db->query("SELECT 1 FROM `".PREFIX.$word."` LIMIT 1;");
+				if($db->error==NULL)
+				{
+					$pattern="/join \`".$word."\`/";
+					$create[$i]['Create View']=preg_replace($pattern,"join `".PREFIX.$word."`",$create[$i]['Create View']);
 				}
 			}
 
