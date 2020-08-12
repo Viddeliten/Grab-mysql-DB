@@ -24,14 +24,23 @@ chdir($dir_path);
 require_once("config_serialized.php");
 
 $suggested_sql=array();
-$serialized_db=file_get_contents ( SERIALIZED_PATH."/serialized_db.txt");
+
+if(file_exists(SERIALIZED_PATH."/json_db.txt");
+{
+	$json_db=file_get_contents ( SERIALIZED_PATH."/json_db.txt");
+	$create=json_decode($json_db, TRUE);
+}
+else
+{
+	$serialized_db=file_get_contents ( SERIALIZED_PATH."/serialized_db.txt");
+	$create=unserialize($serialized_db);
+}
 
 $tables=array();
 $view_creates=array();
 
 if($serialized_db!==FALSE)
 {
-	$create=unserialize($serialized_db);
     
 	//First, just create the db's
 	for($i=0; $i<count($create); $i++)
