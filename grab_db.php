@@ -17,8 +17,8 @@ echo "<br />";
 
 require_once("functions/class_db.php");
 
-// $db=static_db::getInstance(db_host, db_name, granted_db_user, granted_db_pass);
-$connection=db_connect(db_host, db_name, granted_db_user, granted_db_pass);
+$connection = static_db::getInstance(db_host, db_name, granted_db_user, granted_db_pass);
+// $connection=db_connect(db_host, db_name, granted_db_user, granted_db_pass);
 
 // chdir($dir_path);
 require_once("config_serialized.php");
@@ -58,12 +58,14 @@ if($tt=mysql_query($sql))
 }
 
 $sql="show triggers;";
-echo "<pre>$sql</pre>";
+echo "<br />TRIGGERS: <pre>$sql</pre>";
 if($tt=mysql_query($sql))
 {
+    echo "tt:<pre>".print_r($tt,1)."</pre>";
 	echo mysql_affected_rows();
 	while($t=mysql_fetch_array($tt))
 	{
+        echo "TRIGGER:<pre>".print_r($t,1)."</pre>";
 		$sql="show create trigger ".$t[0].";";
 		echo "<pre>$sql</pre>";
 		if($cc=mysql_query($sql))
@@ -86,13 +88,13 @@ if($tt=mysql_query($sql))
 			}
 		}
 		else
-			echo mysql_error();
+			echo "ERROR:<pre>".print_r(mysql_error(),1)."</pre>";
 	}
 }
 else
-	echo mysql_error();
+    echo "ERROR:<pre>".print_r(mysql_error(),1)."</pre>";
 
-echo "CREATE:<pre>".print_r($create,1)."</pre>";
+echo "CREATE after trigger:<pre>".print_r($create,1)."</pre>";
 
 chdir($dir_path);
 echo "Current dir: ".getcwd();
