@@ -25,7 +25,7 @@ require_once("config_serialized.php");
 
 $suggested_sql=array();
 
-if(file_exists(SERIALIZED_PATH."/json_db.txt");
+if(file_exists(SERIALIZED_PATH."/json_db.txt"))
 {
 	$json_db=file_get_contents ( SERIALIZED_PATH."/json_db.txt");
 	$create=json_decode($json_db, TRUE);
