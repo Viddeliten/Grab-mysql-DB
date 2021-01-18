@@ -111,7 +111,8 @@ if($serialized_db!==FALSE)
 				echo "<pre>".$db->error."</pre>";
 			}
 
-			$create[$i]['SQL Original Statement']=preg_replace("/DEFINER=`[A-Za-z0-9_-]*`@/","DEFINER=`root`@", $create[$i]['SQL Original Statement']);
+			// $create[$i]['SQL Original Statement']=preg_replace("/DEFINER=`[A-Za-z0-9_-]*`@/","DEFINER=`root`@", $create[$i]['SQL Original Statement']);
+			$create[$i]['SQL Original Statement']=preg_replace("/DEFINER=`[^\s]*`/","", $create[$i]['SQL Original Statement']); // run it without definer
 			$create[$i]['SQL Original Statement']=str_replace("INSERT INTO ","INSERT INTO ".PREFIX,$create[$i]['SQL Original Statement']);
 			$create[$i]['SQL Original Statement']=str_replace("ON `","ON `".PREFIX,$create[$i]['SQL Original Statement']);
 			$create[$i]['SQL Original Statement']=str_replace("TRIGGER `","TRIGGER `".PREFIX,$create[$i]['SQL Original Statement']);
