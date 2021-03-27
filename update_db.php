@@ -32,6 +32,7 @@ if(file_exists(SERIALIZED_PATH."/json_db.txt"))
 }
 else
 {
+    echo "<br /> File: ".SERIALIZED_PATH."/serialized_db.txt";
 	$serialized_db=file_get_contents ( SERIALIZED_PATH."/serialized_db.txt");
 	$create=unserialize($serialized_db);
 }
@@ -41,6 +42,7 @@ $view_creates=array();
 
 if($serialized_db!==FALSE)
 {
+    // preprint($create, "<br />DEBUG0903");
     
 	//First, just create the db's
 	for($i=0; $i<count($create); $i++)
@@ -74,7 +76,7 @@ if($serialized_db!==FALSE)
 			// $create[$i]['Create View']=preg_replace("/VIEW \`([^`]+)\` AS/","VIEW `".PREFIX."\\1` AS",$create[$i]['Create View']);
 			
 			preg_match_all("/\`((?!".PREFIX.")[^`]+)\`\.\`([^`]+)\`/",$create[$i]['Create View'],$matches);
-			preprint($matches, "DEBUG1333 matches");
+			// preprint($matches, "DEBUG1333 matches");
 			foreach($matches[1] as $key => $word)
 			{
 				// If the word is a table or view, we must add the prefix
@@ -88,7 +90,7 @@ if($serialized_db!==FALSE)
 			}
 // join `table`
 			preg_match_all("/join \`((?!".PREFIX.")[^`]+)\`/",$create[$i]['Create View'],$matches);
-			preprint($matches, "DEBUG1334 matches");
+			// preprint($matches, "DEBUG1334 matches");
 			foreach($matches[1] as $key => $word)
 			{
 				// If the word is a table or view, we must add the prefix
@@ -105,9 +107,10 @@ if($serialized_db!==FALSE)
 		else if(isset($create[$i]['SQL Original Statement']))
 		{
 			$sql="DROP TRIGGER IF EXISTS ".PREFIX.$create[$i]['Trigger'];
+
+            echo "<br />$sql</pre>";
 			if(!$db->query($sql))
 			{
-				echo "<br />$sql</pre>";
 				echo "<pre>".$db->error."</pre>";
 			}
 
@@ -117,9 +120,10 @@ if($serialized_db!==FALSE)
 			$create[$i]['SQL Original Statement']=str_replace("ON `","ON `".PREFIX,$create[$i]['SQL Original Statement']);
 			$create[$i]['SQL Original Statement']=str_replace("TRIGGER `","TRIGGER `".PREFIX,$create[$i]['SQL Original Statement']);
 			// $create[$i]['SQL Original Statement']=str_replace("INSERT INTO ","INSERT INTO ".PREFIX,$create[$i]['SQL Original Statement']);
+			
+            echo "<br />SQL Original Statement:<pre>".$create[$i]['SQL Original Statement']."</pre>";
 			if(!$db->query($create[$i]['SQL Original Statement']))
 			{
-				echo "<br />SQL Original Statement:<pre>".$create[$i]['SQL Original Statement']."</pre>";
 				echo "<pre>".$db->error.print_r($create[$i],1)."</pre>";
 				$suggested_sql[]=$create[$i]['SQL Original Statement'].";";
 			}
