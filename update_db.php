@@ -40,7 +40,7 @@ else
 $tables=array();
 $view_creates=array();
 
-if($serialized_db!==FALSE)
+if(isset($create) && $create!==FALSE)
 {
     // preprint($create, "<br />DEBUG0903");
     
