@@ -65,8 +65,9 @@ if(isset($create) && $create!==FALSE)
 		}
 		else if(isset($create[$i]['Create View']))
 		{
-			// Change the defining user to the user we are logged in with now
-			$create[$i]['Create View']=preg_replace("/DEFINER=`([^`]+)`@/","DEFINER=`".granted_db_user."`@", $create[$i]['Create View']);
+			// Remove the defining user (I don't think it is needed)
+			$create[$i]['Create View']=preg_replace("/DEFINER=`([^`]+)`@`([^`]+)`/"," ", $create[$i]['Create View']);
+			
             $create[$i]['Create View']=preg_replace("/".db_name."./","/".db_name.".".PREFIX."/", $create[$i]['Create View']);
 			$create[$i]['Create View']=str_replace("\nCREATE ALGORITHM","CREATE OR REPLACE ALGORITHM",$create[$i]['Create View']);
 			$create[$i]['Create View']=str_replace("CREATE ALGORITHM","CREATE OR REPLACE ALGORITHM",$create[$i]['Create View']);
