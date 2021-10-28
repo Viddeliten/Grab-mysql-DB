@@ -66,8 +66,8 @@ if(isset($create) && $create!==FALSE)
 		else if(isset($create[$i]['Create View']))
 		{
             // Replace prefix-placeholders with current prefix
-            if(strcmp(PREFIX,""))
-                $create[$i]['Create View']=str_replace("_PREFIX_",PREFIX,$create[$i]['Create View']);
+            $create[$i]['Create View']=str_replace("_PREFIX_",PREFIX,$create[$i]['Create View']);
+            $create[$i]['View']=str_replace("_PREFIX_",PREFIX,$create[$i]['View']);
 
 			// Remove the defining user (I don't think it is needed)
 			$create[$i]['Create View']=preg_replace("/DEFINER=`([^`]+)`@`([^`]+)`/"," ", $create[$i]['Create View']);
@@ -82,6 +82,7 @@ if(isset($create) && $create!==FALSE)
             
 			// $create[$i]['Create View']=preg_replace("/VIEW \`([^`]+)\` AS/","VIEW `".PREFIX."\\1` AS",$create[$i]['Create View']);
 			
+            /*  This block should now be obsolete
 			preg_match_all("/\`((?!".PREFIX.")[^`]+)\`\.\`([^`]+)\`/",$create[$i]['Create View'],$matches);
 			// preprint($matches, "DEBUG1333 matches");
 			foreach($matches[1] as $key => $word)
@@ -108,6 +109,7 @@ if(isset($create) && $create!==FALSE)
 					$create[$i]['Create View']=preg_replace($pattern,"join `".PREFIX.$word."`",$create[$i]['Create View']);
 				}
 			}
+            */
 
             $view_creates[]=$create[$i]['Create View'];
 		}

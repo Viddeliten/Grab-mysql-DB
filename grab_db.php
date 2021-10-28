@@ -38,8 +38,11 @@ if($tt=mysql_query($sql))
 				{
                     $c['Create View']=str_replace("CREATE ALGORITHM", "\nCREATE ALGORITHM",$c['Create View']);
                     $c['Create View']=str_replace("`,`", "`,\n`",$c['Create View']); //Try and make lines shorter to avoid troubles with writing file
-                    $c['View']=str_replace(PREFIX, "_PREFIX_",$c['View']); //Replace PREFIX with a placeholder
-                    $c['Create View']=str_replace(PREFIX, "_PREFIX_",$c['Create View']); //Replace PREFIX with a placeholder
+                    if(strcmp(PREFIX,""))
+                    {
+                        $c['View']=str_replace(PREFIX, "_PREFIX_",$c['View']); //Replace PREFIX with a placeholder
+                        $c['Create View']=str_replace(PREFIX, "_PREFIX_",$c['Create View']); //Replace PREFIX with a placeholder
+                    }
 				}
 				
 				if(isset($c['Table']))
