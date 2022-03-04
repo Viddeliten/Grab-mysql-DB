@@ -30,7 +30,7 @@ if($tt=mysql_query($sql))
 {
 	while($t=mysql_fetch_array($tt))
 	{
-		if($cc=mysql_query("show create table ".$t[0].";"))
+		if($cc=mysql_query("show create table `".$t[0]."`;"))
 		{
 			if($c=mysql_fetch_assoc($cc))
 			{
