@@ -30,7 +30,7 @@ if($tt=mysql_query($sql))
 {
 	while($t=mysql_fetch_array($tt))
 	{
-		if($cc=mysql_query("show create table ".$t[0].";"))
+		if($cc=mysql_query("show create table `".$t[0]."`;"))
 		{
 			if($c=mysql_fetch_assoc($cc))
 			{
@@ -105,10 +105,10 @@ chdir($dir_path);
 echo "Current dir: ".getcwd();
 //Write all the create tables to a file
 $to_write=serialize($create);
-file_put_contents (SERIALIZED_PATH."/serialized_db.txt" , $to_write ); //write it outside of this folder so that it can be commited to right project
-echo "<br />Wrote serialized to: ".SERIALIZED_PATH."/serialized_db.txt";
+$result = file_put_contents (SERIALIZED_PATH."/serialized_db.txt" , $to_write ); //write it outside of this folder so that it can be commited to right project
+echo "<br />Wrote serialized to: ".SERIALIZED_PATH."/serialized_db.txt '".$result."'";
 //Write all the create tables to a file json encoded
 $to_write=json_encode($create);
-file_put_contents (SERIALIZED_PATH."/json_db.txt" , $to_write ); //write it outside of this folder so that it can be commited to right project
-echo "<br />Wrote json encoded to: ".SERIALIZED_PATH."/json_db.txt";
+$result = file_put_contents (SERIALIZED_PATH."/json_db.txt" , $to_write ); //write it outside of this folder so that it can be commited to right project
+echo "<br />Wrote json encoded to: ".SERIALIZED_PATH."/json_db.txt ".$result;
 ?>
