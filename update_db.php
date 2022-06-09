@@ -52,16 +52,30 @@ if(isset($create) && $create!==FALSE)
 		{
             $tables[]=$create[$i]['Table'];
             
+            // Adding prefix to table name
 			$create[$i]['Create Table']=str_replace("\nCREATE TABLE IF NOT EXISTS `".$create[$i]['Table']."`","CREATE TABLE IF NOT EXISTS `".PREFIX.$create[$i]['Table']."`",$create[$i]['Create Table']);
+            
+            // Fixing auto increment
 			$create[$i]['Create Table']=preg_replace("/ AUTO_INCREMENT=\d*/","", $create[$i]['Create Table']);
-			if(!$db->query($create[$i]['Create Table']))
-			{
-				echo "<br />48 - Create Table:<pre>".$create[$i]['Create Table']."</pre>";
-				echo "<pre>".$db->error."</pre>";
-				$suggested_sql[]=$create[$i]['Create Table'].";";
-			}
-			// else
-				// echo "<br /><pre>".$create[$i]['Create Table']."</pre>";
+            
+            // Fixing references to tables in foreign keys with added prefix
+			$create[$i]['Create Table']=preg_replace("/REFERENCES `([^`]+)`/","REFERENCES `".PREFIX."\\1`", $create[$i]['Create Table']);
+            
+            // preprint($create[$i]['Create Table'], "create table");
+            
+            try  {
+                if(!$db->query($create[$i]['Create Table']))
+                {
+                    echo "<br />48 - Create Table:<pre>".$create[$i]['Create Table']."</pre>";
+                    echo "<pre>".$db->error."</pre>";
+                    $suggested_sql[]=$create[$i]['Create Table'].";";
+                }
+                // else
+                    // echo "<br /><pre>".$create[$i]['Create Table']."</pre>";
+            } catch (Exception $e) {
+                preprint($create[$i]['Create Table'], "Create table query failed");
+                preprint($e->getmessage());
+            }
 		}
 		else if(isset($create[$i]['Create View']))
 		{
