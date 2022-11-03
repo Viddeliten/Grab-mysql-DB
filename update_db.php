@@ -70,8 +70,8 @@ if(isset($create) && $create!==FALSE)
                     echo "<pre>".$db->error."</pre>";
                     $suggested_sql[]=$create[$i]['Create Table'].";";
                 }
-                // else
-                    // echo "<br /><pre>".$create[$i]['Create Table']."</pre>";
+                else
+                    echo "<br /><pre>".$create[$i]['Create Table']."</pre>";
             } catch (Exception $e) {
                 preprint($create[$i]['Create Table'], "Create table query failed");
                 preprint($e->getmessage());
@@ -223,8 +223,8 @@ if(isset($create) && $create!==FALSE)
 			//For each of $shell rows, check that the row exists in $current row
 			foreach($source_rows as $k => $s)
 			{
-				//It might be a constraint, and it might reference a table that needs a prefix.
-				$s=preg_replace("/REFERENCES `([a-z0-9_]*)`/","REFERENCES `".PREFIX."\\1`", $s);
+				//It might be a constraint, and it might reference a table that needs a prefix. (commented out, because it caused me double prefixes)
+				// $s=preg_replace("/REFERENCES `([a-z0-9_]*)`/","REFERENCES `".PREFIX."\\1`", $s);
 
 				$sql="";
 				if(!in_array($s,$current_rows))
@@ -234,6 +234,7 @@ if(isset($create) && $create!==FALSE)
 					if (strpos($s,'KEY') !== false)
 					{
                         $sql="ALTER TABLE ".PREFIX.$create[$i]['Table']." ADD ".$s.";";
+                        preprint($sql);
 					}
 					else if(preg_match("/`[A-Za-z0-9_]*`/", $s, $matches)) //This should mean we are dealing with a column
 					{
