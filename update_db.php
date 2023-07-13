@@ -42,7 +42,7 @@ $view_creates=array();
 
 if(isset($create) && $create!==FALSE)
 {
-    // preprint($create, "<br />DEBUG0903");
+    preprint($create, "<br />DEBUG0903");
     
 	//First, just create the db's
 	for($i=0; $i<count($create); $i++)
@@ -167,9 +167,15 @@ if(isset($create) && $create!==FALSE)
                 $create_view=preg_replace("/([^\.\"AS \"])`".$table."`/","\\1`".PREFIX.$table."`", $create_view);
             }
             echo "<br />Create View:<pre>".$create_view."</pre>";
-            if(!$db->query($create_view))
-            {
-                echo "<pre>".$db->error."</pre>";
+            try {
+                if(!$db->query($create_view))
+                {
+                    echo "<pre>".$db->error."</pre>";
+                    $suggested_sql[]=$create_view.";";
+                }
+            } catch (Exception $e) {
+                preprint($create_view);
+                preprint($e->getMessage(), "Create view failed");
                 $suggested_sql[]=$create_view.";";
             }
         }
@@ -264,12 +270,19 @@ if(isset($create) && $create!==FALSE)
 					else 
 						echo "<br />NO suggestion";
 					
-                    if(!$db->query($sql))
-					{
-						echo "<br />Create Table:<pre>".$sql."</pre>";
-						echo "<pre>".$db->error."</pre>";
-						$suggested_sql[]=$sql;
-					}
+                    
+                    try {
+                        if(!$db->query($sql))
+                        {
+                            echo "<br />Create Table:<pre>".$sql."</pre>";
+                            echo "<pre>".$db->error."</pre>";
+                            $suggested_sql[]=$sql;
+                        }
+                    } catch (Exception $e) {
+                        preprint($sql, "<br />DEBUG1737");
+                        preprint($e->getMessage(), "Create table fail");
+                        $suggested_sql[]=$sql;
+                    }
 				}
 			}
 		}
