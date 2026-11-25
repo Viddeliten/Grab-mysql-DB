@@ -25,6 +25,25 @@ require_once("config_serialized.php");
 
 $suggested_sql=array();
 
+/**
+ * Adds PREFIX to every table and view name in a CREATE VIEW statement.
+ * Every `name` that is a known table/view gets the prefix, wherever it appears
+ * (FROM, JOIN, qualifiers like `name`.`col`, the view's own name), so all
+ * references to the same table end up identical. Left alone:
+ *  - column names (right after a dot: `p`.`story`)
+ *  - output aliases (right after AS: ... AS `author`)
+ */
+function prefix_view_names($sql, $names)
+{
+	if(PREFIX=="")
+		return $sql;
+	return preg_replace_callback('/(\.|\bAS\s+)?`([^`]+)`/i', function($m) use ($names) {
+		if($m[1]!="" || !in_array($m[2], $names, TRUE))
+			return $m[0];
+		return "`".PREFIX.$m[2]."`";
+	}, $sql);
+}
+
 if(file_exists(SERIALIZED_PATH."/json_db.txt"))
 {
 	$json_db=file_get_contents ( SERIALIZED_PATH."/json_db.txt");
@@ -38,6 +57,7 @@ else
 }
 
 $tables=array();
+$view_names=array();
 $view_creates=array();
 
 if(isset($create) && $create!==FALSE)
@@ -82,6 +102,7 @@ if(isset($create) && $create!==FALSE)
             // Replace prefix-placeholders with current prefix
             $create[$i]['Create View']=str_replace("_PREFIX_",PREFIX,$create[$i]['Create View']);
             $create[$i]['View']=str_replace("_PREFIX_",PREFIX,$create[$i]['View']);
+            $view_names[]=$create[$i]['View'];
 
 			// Remove the defining user (I don't think it is needed)
 			$create[$i]['Create View']=preg_replace("/DEFINER=`([^`]+)`@`([^`]+)`/"," ", $create[$i]['Create View']);
@@ -160,12 +181,7 @@ if(isset($create) && $create!==FALSE)
     {
         foreach($view_creates as $view)
         {
-            $create_view=$view;
-            foreach($tables as $table)
-            {
-                // echo "<br />preg_replace(\"/([^.])`".$table."`\./","\\0`".PREFIX.$table."`.\", $create);";
-                $create_view=preg_replace("/([^\.\"AS \"])`".$table."`/","\\1`".PREFIX.$table."`", $create_view);
-            }
+            $create_view=prefix_view_names($view, array_merge($tables, $view_names));
             echo "<br />Create View:<pre>".$create_view."</pre>";
             try {
                 if(!$db->query($create_view))
